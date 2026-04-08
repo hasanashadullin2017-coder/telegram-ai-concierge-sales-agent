@@ -1,0 +1,1421 @@
+{
+  "name": "Консьерж и продажник",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -512,
+        224
+      ],
+      "id": "2580f8dc-d1e7-42e3-9623-7032874baa1d",
+      "name": "Telegram Trigger",
+      "webhookId": "891ef1b3-423b-4558-92d6-564411c3c69f",
+      "credentials": {
+        "telegramApi": {
+          "id": "qZpis2YDax0xPZoC",
+          "name": "Тестовый"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "5abfe366-14ef-4e4a-ab0c-2baf037720b1"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "31bd686e-960b-470c-8c10-93ef778be671",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.voice }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        160,
+        592
+      ],
+      "id": "a98ed683-5eb1-4491-93b7-c4aa3e3b7e17",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        336,
+        672
+      ],
+      "id": "eb60611f-878d-47fb-84fa-c899a7ab3e4f",
+      "name": "Get a file",
+      "webhookId": "702343bc-bda8-4835-b3a3-f5427ae2588d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qZpis2YDax0xPZoC",
+          "name": "Тестовый"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        544,
+        672
+      ],
+      "id": "9f56719f-ba50-4b82-939d-6c7bd9a15adb",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "eg7PsGXJ5wGIHUZ2",
+          "name": "new key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f43999e5-4b9a-4bc1-9131-3b9c78382803",
+              "name": "text",
+              "value": "={{ $('Telegram Trigger').item.json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        528
+      ],
+      "id": "00627bfb-0c27-4594-ac49-8df6735193ca",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        384
+      ],
+      "id": "c798bc88-4bb6-4d7f-ad4a-8c5619eb3c48",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "eg7PsGXJ5wGIHUZ2",
+          "name": "new key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "data",
+        "key": "=chat_{{ $json.message.chat.id }}",
+        "options": {}
+      },
+      "id": "5419d8a5-c834-45c4-8ae2-b9a72e804693",
+      "name": "Get Interaction State",
+      "type": "n8n-nodes-base.redis",
+      "position": [
+        -320,
+        224
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "redis": {
+          "id": "zhxT3bNZWoIYZqWg",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "6882db64-b522-4895-8949-d98d87b53b49",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.data }}",
+                    "rightValue": "bot"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Менеджер"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Консьерж"
+        }
+      },
+      "id": "09ee7922-55af-4a84-ba81-870184f4b86f",
+      "name": "Switch Interaction",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -128,
+        224
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=chat_{{ $('Telegram Trigger').item.json.message.chat.id }}_mem"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        1008,
+        384
+      ],
+      "id": "a3167556-f74e-4f69-a70a-19d99371a8b5",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "zhxT3bNZWoIYZqWg",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "data",
+        "key": "=chat_{{ $('Telegram Trigger').item.json.message.chat.id }}_mem",
+        "options": {}
+      },
+      "id": "8f6d4a9c-1721-40f1-886a-85ab42344111",
+      "name": "Redis",
+      "type": "n8n-nodes-base.redis",
+      "position": [
+        800,
+        784
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "redis": {
+          "id": "zhxT3bNZWoIYZqWg",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        960,
+        976
+      ],
+      "id": "641b0505-e565-4f40-a507-8119521a6d1f",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "eg7PsGXJ5wGIHUZ2",
+          "name": "new key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"name\": \"\",\n  \"address\": \"\",\n  \"reason_call\": \"\",\n  \"phone\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1184,
+        976
+      ],
+      "id": "acf6a6db-8b85-4f1f-bf30-7fa9f9f199bd",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  \"name\": \"\",\n  \"address\": \"\",\n  \"reason_call\": \"\",\n  \"phone\": \"\",\n  ...$input.item.json.output,\n}"
+      },
+      "id": "618c3b59-eaec-40c2-a128-a69d26369943",
+      "name": "With Defaults",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1504,
+        720
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "858f38ff-9ee7-4c1f-a979-8930ffc915bb",
+              "leftValue": "={{ Object.values($json).every(val => Boolean(val)) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1696,
+        720
+      ],
+      "id": "101414d7-badf-4dab-b97d-e61647ad1c4c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $('Консьерж').item.json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1696,
+        976
+      ],
+      "id": "74da597d-ce83-4a6a-8c26-48bcf17b36e3",
+      "name": "Send a text message1",
+      "webhookId": "db98882c-aac8-4984-a388-5202b3026760",
+      "credentials": {
+        "telegramApi": {
+          "id": "qZpis2YDax0xPZoC",
+          "name": "Тестовый"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=chat_{{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "value": "bot"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        384
+      ],
+      "id": "898a8574-5934-413f-a653-f3b452e74439",
+      "name": "Redis1",
+      "credentials": {
+        "redis": {
+          "id": "zhxT3bNZWoIYZqWg",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "5abfe366-14ef-4e4a-ab0c-2baf037720b1"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "31bd686e-960b-470c-8c10-93ef778be671",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.voice }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        192,
+        -96
+      ],
+      "id": "4eff4d50-3381-47ef-b2fe-07e4e9bb82e7",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        -32
+      ],
+      "id": "075cad43-bdaa-4f6f-8d41-af346867ca1c",
+      "name": "Get a file1",
+      "webhookId": "702343bc-bda8-4835-b3a3-f5427ae2588d",
+      "credentials": {
+        "telegramApi": {
+          "id": "qZpis2YDax0xPZoC",
+          "name": "Тестовый"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -32
+      ],
+      "id": "a704eafc-1836-4ae9-b8e7-279068d5004b",
+      "name": "Transcribe a recording1",
+      "credentials": {
+        "openAiApi": {
+          "id": "eg7PsGXJ5wGIHUZ2",
+          "name": "new key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f43999e5-4b9a-4bc1-9131-3b9c78382803",
+              "name": "text",
+              "value": "={{ $json.text || $('Telegram Trigger').item.json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        736,
+        -112
+      ],
+      "id": "a98bfacf-c94f-4012-945c-98d22088bcaa",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1168,
+        80
+      ],
+      "id": "9845b202-8a1f-44c7-abe0-b5e23394fc1d",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "eg7PsGXJ5wGIHUZ2",
+          "name": "new key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Спасибо за предоставленные данные, перевожу на специалиста!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2224,
+        384
+      ],
+      "id": "047dd6dc-917b-401e-83b3-242e0242b7eb",
+      "name": "Send a text message",
+      "webhookId": "0e2bae2f-8626-4d3d-bdbd-6a0513f8ff7a",
+      "credentials": {
+        "telegramApi": {
+          "id": "qZpis2YDax0xPZoC",
+          "name": "Тестовый"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "user_info",
+        "key": "=user_{{ $('Telegram Trigger').item.json.message.chat.id }}_info",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2608,
+        384
+      ],
+      "id": "9b255653-d224-4628-b698-edc2ef052bde",
+      "name": "Redis2",
+      "credentials": {
+        "redis": {
+          "id": "zhxT3bNZWoIYZqWg",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=user_{{ $('Telegram Trigger').item.json.message.chat.id }}_info",
+        "value": "={{ $json.output }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        720
+      ],
+      "id": "6a1a7431-39b9-4c2b-b4b3-9ce4dad5ceee",
+      "name": "Redis3",
+      "credentials": {
+        "redis": {
+          "id": "zhxT3bNZWoIYZqWg",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "user_info",
+        "key": "=user_{{ $('Telegram Trigger').item.json.message.chat.id }}_info",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        464,
+        128
+      ],
+      "id": "d8b726ff-3794-4d43-a9e1-5481d3fd230e",
+      "name": "Redis4",
+      "credentials": {
+        "redis": {
+          "id": "zhxT3bNZWoIYZqWg",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=chat1_{{ $('Telegram Trigger').item.json.message.chat.id }}_mem"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        1376,
+        80
+      ],
+      "id": "82949534-2370-434c-bdd9-f866b8ff2bf4",
+      "name": "Redis Chat Memory1",
+      "credentials": {
+        "redis": {
+          "id": "zhxT3bNZWoIYZqWg",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1600,
+        -112
+      ],
+      "id": "48e98de5-17ce-4a3b-ad4e-61eaefc83726",
+      "name": "Send a text message2",
+      "webhookId": "b2c66dd1-5caa-4ec5-aa82-95a6506fe92e",
+      "credentials": {
+        "telegramApi": {
+          "id": "qZpis2YDax0xPZoC",
+          "name": "Тестовый"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2432,
+        384
+      ],
+      "id": "b9b70f5c-ef84-4c69-ab15-3778fc1a8901",
+      "name": "Wait",
+      "webhookId": "b3a10cd8-6d44-4a3e-8a9e-0e37503bc384"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=Ты — живой менеджер-продавец компании. \nТы подключаешься к клиенту ПОСЛЕ того, как консьерж собрал все необходимые данные.\n\nНиже тебе передаются данные клиента из внутренней системы:\n\nИмя: {{ $json.user_info.name }}\nТелефон: {{ $json.user_info.phone }}\nАдрес: {{ $json.user_info.address }}\nПричина обращения: {{ $json.user_info.reason_call }}\n\nЕсли каких-то данных нет — просто игнорируй пустые поля.\n\nТвоя задача — ПЕРВЫМ начать диалог с клиентом. \nНапиши короткое, дружелюбное приветствие, используй имя человека. \nПокажи, что ты уже в теме его запроса (но не раскрывай внутреннюю кухню и то, что тебе передали данные).\n\n🎛 Твой стиль общения:\n— Общайся максимально естественно, как живой человек.\n— Короткие сообщения, 1–2 предложения.\n— Легкая доброжелательность, но без панибратства.\n— Лёгкий юмор уместен, но очень точечно.\n— Сразу переходи к сути: уточни, чем помочь, или предложи решение.\n\n📌 Твоя задача в диалоге:\n— Уточнить детали запроса.\n— Ответить просто и понятно.\n— Предложить подходящее решение.\n— Мягко вести к продаже без давления.\n— В конце диалога предложить следующий шаг: оформить заказ, созвон, консультацию.\n\n🚫 Чего нельзя:\n— Не говорить, что ты ИИ.\n— Не упоминать консьержа или передачу данных.\n— Не писать длинные полотна текста.\n— Не использовать плохие шаблонные фразы вроде “Ваш запрос очень важен для нас”.\n\nКогда получаешь сообщение от пользователя — отвечай как живой менеджер.\n\nЕсли это ПЕРВЫЙ контакт после консьержа — начни диалог сам фразой:\n\n«{{ $json.user_info.name }}, здравствуйте! Я подключился к вашему запросу. Давайте разберёмся и помогу вам.»\n\nЕсли имя отсутствует — используй нейтральное: «Здравствуйте!»."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1264,
+        -112
+      ],
+      "id": "183066dd-eba3-4e5c-b8df-4c153bcf1dcf",
+      "name": "Менеджер"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=Ты — консьерж-агент, первая точка контакта с пользователем.\nТвоя задача — вежливо и по шагам собрать у человека четыре ключевых данных, а затем передать его следующему агенту.\n\n🎯 Твоя цель\n\nСобрать у пользователя следующие данные:\n\t1.\tИмя\n\t2.\tФамилия\n\t3.\tНомер телефона\n\t4.\tАдрес\n\t5.\tПричина обращения (по возможности в их точной формулировке)\n\n📌 Правила поведения\n\n— Общайся просто, дружелюбно и понятно.\n— Не торопи человека, но мягко веди его шаг за шагом.\n— Если человек пропускает пункт — уточни.\n— Если человек задаёт вопрос, не меняй роль, а мягко возвращай к сбору данных.\n— Используй короткие сообщения.\n— Не придумывай данные, собирай только то, что сказал пользователь.\n— Всегда фиксируй точную формулировку причины обращения.\n\n🧩 Порядок работы\n\t1.\tПоздоровайся и объясни, что тебе нужно задать пару вопросов, чтобы направить его к специалисту.\n\t2.\tСпрашивай строго один вопрос за раз.\n\t3.\tПосле получения ответа — переходи к следующему пункту.\n\t4.\tКогда собрал всё — чётко зафиксируй данные в структурированном виде:\n\nИмя: …\nФамилия: …\nТелефон: …\nАдрес: …\nПричина обращения: …\n\n\t5.\tНапиши фразу: “Готов передать вас специалисту. Подождите секунду.”\n\t6.\tНа этом этапе workflow может передавать диалог следующему агенту.\n\n🚫 Чего нельзя\n\n— Не отвечай как эксперт.\n— Не давай советов.\n— Не решай проблему клиента.\n— Не переходи к следующему агенту без полного набора данных.\n— Не меняй структуру итогового вывода."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        848,
+        560
+      ],
+      "id": "62158e95-06f6-4e5d-adb5-87be152847ab",
+      "name": "Консьерж"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Human messages:\n{{ $json.data\n  .map(i => i.parseJson())\n  .filter(i => i.type === 'human')\n  .map(i => i.data.content)\n  .join('\\n')\n}}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You extract ONLY information explicitly provided by the human messages below.\n\nRules:\n- Analyse ONLY human messages. Ignore all AI messages.\n- DO NOT guess, assume, invent, or fabricate ANY information.\n- If the user did not clearly state a field, return an empty string \"\".\n- Do NOT generate example names (“John Doe”), addresses (like “123 Main St”), phone numbers, or reasons.\n- Return ONLY the JSON object. No explanations.\n\nReturn JSON in this exact format:\n\n{\n  \"name\": \"\",\n  \"address\": \"\",\n  \"reason_call\": \"\",\n  \"phone\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1008,
+        784
+      ],
+      "id": "1d979abb-1643-4326-8116-449b83df1732",
+      "name": "Обработка диалога"
+    },
+    {
+      "parameters": {
+        "content": "# ИИ-продавец/Менеджер. Основной диалог",
+        "height": 512,
+        "width": 1776,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        128,
+        -240
+      ],
+      "id": "5d932fde-1cec-449b-8d9f-000ecb16e9f1",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# ИИ-коньсерж с передачей к основному агенту",
+        "height": 848,
+        "width": 1776,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        128,
+        304
+      ],
+      "id": "0f6703e5-eb2f-4c51-9cd1-a15169ef288d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Передача клиента",
+        "height": 256,
+        "width": 1328,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1952,
+        304
+      ],
+      "id": "859a6484-0648-43bd-8a3c-0927771c6530",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# Был первичный контакт?",
+        "height": 416,
+        "width": 672,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        96
+      ],
+      "id": "0525a48c-03b4-4182-86b3-d2379509fcca",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1040,
+        -112
+      ],
+      "id": "8f2eb7e4-fb7d-42b5-81fe-7d48731336a9",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2992,
+        384
+      ],
+      "id": "2a09cf34-3e67-4f93-905d-9a8844da223f",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0b55870a-cf9a-43fa-92e2-2a90fd527b19",
+              "name": "text",
+              "value": "Здравствуйте!",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2800,
+        384
+      ],
+      "id": "0677c395-28be-4b15-9608-9eeddb6338e7",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -672
+      ],
+      "id": "ab6c98d9-bbac-4784-b353-c0e7a82915ed",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "user_7149364724_info"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -608
+      ],
+      "id": "6ff73f5b-b55d-4e32-8b14-540352d4f1eb",
+      "name": "Redis5",
+      "credentials": {
+        "redis": {
+          "id": "zhxT3bNZWoIYZqWg",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "chat_7149364724"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -448
+      ],
+      "id": "136b41ef-c72d-4dd4-911f-d4c5b413ddb9",
+      "name": "Redis6",
+      "credentials": {
+        "redis": {
+          "id": "zhxT3bNZWoIYZqWg",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "chat1_7149364724_mem"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -752
+      ],
+      "id": "7dc119a3-e321-4b5b-b641-38502e6c8e54",
+      "name": "Redis7",
+      "credentials": {
+        "redis": {
+          "id": "zhxT3bNZWoIYZqWg",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "chat_7149364724_mem"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -912
+      ],
+      "id": "5e21f998-29f9-4f84-a935-60145b8ed266",
+      "name": "Redis8",
+      "credentials": {
+        "redis": {
+          "id": "zhxT3bNZWoIYZqWg",
+          "name": "Redis account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Interaction State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Консьерж",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Консьерж",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Консьерж",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Interaction State": {
+      "main": [
+        [
+          {
+            "node": "Switch Interaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Interaction": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Redis4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Консьерж",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis": {
+      "main": [
+        [
+          {
+            "node": "Обработка диалога",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Обработка диалога",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Обработка диалога",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "With Defaults": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Redis1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file1": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Менеджер",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis2": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis3": {
+      "main": [
+        [
+          {
+            "node": "With Defaults",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Менеджер",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Redis2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Менеджер": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Консьерж": {
+      "main": [
+        [
+          {
+            "node": "Redis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Обработка диалога": {
+      "main": [
+        [
+          {
+            "node": "Redis3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Менеджер",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Менеджер",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Redis5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Redis6",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Redis7",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Redis8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d94f17f4-a5ed-45b6-b798-e2de00094f4c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e4855933bae6682b2d9940b98a50920a5d2d0a1e9dc828b7d051076b1f4b491f"
+  },
+  "id": "n8Jsbor5UfGbF9m6",
+  "tags": []
+}
